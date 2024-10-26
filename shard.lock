@@ -1,0 +1,34 @@
+version: 2.0
+shards:
+  crest:
+    git: https://github.com/mamantoha/crest.git
+    version: 1.4.1
+
+  deepl:
+    git: https://github.com/kojix2/deepl.cr.git
+    version: 0.0.8
+
+  gi-crystal:
+    git: https://github.com/hugopl/gi-crystal.git
+    version: 0.24.0
+
+  gtk4:
+    git: https://github.com/hugopl/gtk4.cr.git
+    version: 0.17.0
+
+  harfbuzz:
+    git: https://github.com/hugopl/harfbuzz.cr.git
+    version: 0.2.0
+
+  http-client-digest_auth:
+    git: https://github.com/mamantoha/http-client-digest_auth.git
+    version: 0.6.0
+
+  http_proxy:
+    git: https://github.com/mamantoha/http_proxy.git
+    version: 0.12.0
+
+  pango:
+    git: https://github.com/hugopl/pango.cr.git
+    version: 0.3.1
+
