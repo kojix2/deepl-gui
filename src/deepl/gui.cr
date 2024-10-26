@@ -39,8 +39,10 @@ app.activate_signal.connect do
 
   # Create text views and make them scrollable
   text_left = Gtk::TextView.new
+  text_left.wrap_mode = :word
   text_right = Gtk::TextView.new
   text_right.editable = false # Disable editing for the translated text view
+  text_right.wrap_mode = :word
 
   scroll_left = Gtk::ScrolledWindow.new
   scroll_left.child = text_left
