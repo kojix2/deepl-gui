@@ -87,17 +87,21 @@ app.activate_signal.connect do
   translate_button.clicked_signal.connect do
     # Get the input text and selected languages
     source_text = text_left.buffer.text
-    if lang_box_left.selected < 1
-      source_lang = nil
-    else
-      source_lang = source_languages[lang_box_left.selected + 1].language
-    end
+    i = lang_box_left.selected
+    source_lang = \
+       if i > 0 && i < source_languages.size
+         source_languages[lang_box_left.selected - 1].language
+       else
+         nil
+       end
 
-    if lang_box_right.selected < 1
-      target_lang = translator.guess_target_language
-    else
-      target_lang = target_languages[lang_box_right.selected + 1].language
-    end
+    i = lang_box_right.selected
+    target_lang = \
+       if i > 0 && i < target_languages.size
+         target_languages[lang_box_right.selected - 1].language
+       else
+         translator.guess_target_language
+       end
 
     # Perform translation using the DeepL API
     begin
@@ -115,7 +119,6 @@ app.activate_signal.connect do
   window.child = main_box
   window.present
 end
-
 
 # Run the application
 exit(app.run)
