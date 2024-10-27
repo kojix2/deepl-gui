@@ -21,11 +21,16 @@ app.activate_signal.connect do
   main_box.margin_start = 10
   main_box.margin_end = 10
 
-  # Set up the language selection dropdowns
-  lang_box_left = Gtk::DropDown.new_from_strings(source_languages.map(&.name))
-  lang_box_right = Gtk::DropDown.new_from_strings(target_languages.map(&.name))
+  # Set up the source language dropdown
+  source_lang_names = source_languages.map(&.name).unshift("AUTO")
+  lang_box_left = Gtk::DropDown.new_from_strings(source_lang_names)
+  # Set the default selection to "AUTO"
+  lang_box_left.selected = 0
 
-  lang_box_left.selected = 0 # Select the first language by default
+  # Set up the target language dropdown
+  target_lang_names = target_languages.map(&.name).unshift("AUTO")
+  lang_box_right = Gtk::DropDown.new_from_strings(target_lang_names)
+  # Set the default selection to "AUTO"
   lang_box_right.selected = 0
 
   # Create the Translate button
@@ -67,8 +72,17 @@ app.activate_signal.connect do
   translate_button.clicked_signal.connect do
     # Get the input text and selected languages
     source_text = text_left.buffer.text
-    source_lang = source_languages[lang_box_left.selected].language
-    target_lang = target_languages[lang_box_right.selected].language
+    if lang_box_left.selected < 1
+      source_lang = nil
+    else
+      source_lang = source_languages[lang_box_left.selected + 1].language
+    end
+
+    if lang_box_right.selected < 1
+      target_lang = translator.guess_target_language
+    else
+      target_lang = target_languages[lang_box_right.selected + 1].language
+    end
 
     # Perform translation using the DeepL API
     begin
