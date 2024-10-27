@@ -21,14 +21,13 @@ app.activate_signal.connect do
   main_box.margin_start = 10
   main_box.margin_end = 10
 
-  # CSS styling to increase font size
+  # Load the CSS into a provider for text styling
   css = <<-CSS
   textview {
-    font-size: 20px; /* Change this size to your desired font size */
+    font-size: 20px;
   }
   CSS
 
-  # Load the CSS into a provider
   css_provider = Gtk::CssProvider.new
   gtk_version = Gtk::MAJOR_VERSION * 100 + Gtk::MINOR_VERSION
   if gtk_version >= 412
@@ -37,60 +36,71 @@ app.activate_signal.connect do
     css_provider.load_from_data(css, css.bytesize)
   end
 
-  # Set up the source language dropdown
-  source_lang_names = source_languages.map(&.name).unshift("AUTO")
-  lang_box_left = Gtk::DropDown.new_from_strings(source_lang_names)
+  # Left panel with source language dropdown, text input, and button
+  left_panel = Gtk::Box.new(:vertical, 10)
+
+  # Configure the source language dropdown
+  lang_box_left = Gtk::DropDown.new_from_strings(
+    source_languages.map(&.name).unshift("AUTO")
+  )
   lang_box_left.selected = 0
+  lang_box_left.hexpand = false
+  lang_box_left.halign = :start
+  lang_box_left.set_size_request(150, -1)
 
-  # Set up the target language dropdown
-  target_lang_names = target_languages.map(&.name).unshift("AUTO")
-  lang_box_right = Gtk::DropDown.new_from_strings(target_lang_names)
-  lang_box_right.selected = 0
-
-  # Create the Translate button
-  translate_button = Gtk::Button.new_with_label("Translate")
-
-  # Create a horizontal box for language selection and button
-  lang_and_button_box = Gtk::Box.new(:horizontal, 10)
-  lang_and_button_box.append(lang_box_left)
-  lang_and_button_box.append(lang_box_right)
-  lang_and_button_box.append(translate_button)
-
-  # Create text views and make them scrollable
   text_left = Gtk::TextView.new
   text_left.wrap_mode = :word
-  text_right = Gtk::TextView.new
-  text_right.editable = false
-  text_right.wrap_mode = :word
-
-  # Apply CSS to both textview widgets
   style_context_left = text_left.style_context
   style_context_left.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
-
-  style_context_right = text_right.style_context
-  style_context_right.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
 
   scroll_left = Gtk::ScrolledWindow.new
   scroll_left.child = text_left
   scroll_left.hexpand = true
   scroll_left.vexpand = true
 
+  translate_button = Gtk::Button.new_with_label("Translate")
+
+  left_panel.append(lang_box_left)
+  left_panel.append(scroll_left)
+  left_panel.append(translate_button)
+
+  # Right panel with target language dropdown and text output
+  right_panel = Gtk::Box.new(:vertical, 10)
+
+  # Configure the target language dropdown
+  lang_box_right = Gtk::DropDown.new_from_strings(
+    target_languages.map(&.name).unshift("AUTO")
+  )
+  lang_box_right.selected = 0
+  lang_box_right.hexpand = false
+  lang_box_right.halign = :start
+  lang_box_right.set_size_request(150, -1)
+
+  text_right = Gtk::TextView.new
+  text_right.editable = false
+  text_right.wrap_mode = :word
+  style_context_right = text_right.style_context
+  style_context_right.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+
   scroll_right = Gtk::ScrolledWindow.new
   scroll_right.child = text_right
   scroll_right.hexpand = true
   scroll_right.vexpand = true
 
-  # Continue with the rest of your layout as originally...
+  right_panel.append(lang_box_right)
+  right_panel.append(scroll_right)
+
+  # Horizontal box for the two panels
   text_box = Gtk::Box.new(:horizontal, 10)
-  text_box.append(scroll_left)
-  text_box.append(scroll_right)
+  text_box.append(left_panel)
+  text_box.append(right_panel)
 
-  main_box.append(lang_and_button_box)
   main_box.append(text_box)
+  window.child = main_box
+  window.present
 
-  # Connect the click event to the Translate button
+  # Connect the Translate button click event
   translate_button.clicked_signal.connect do
-    # Get the input text and selected languages
     source_text = text_left.buffer.text
     i = lang_box_left.selected
     source_lang = \
@@ -120,9 +130,6 @@ app.activate_signal.connect do
       text_right.buffer.text = "Error: #{ex.message}"
     end
   end
-
-  window.child = main_box
-  window.present
 end
 
 # Run the application
