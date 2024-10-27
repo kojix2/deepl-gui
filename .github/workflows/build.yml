@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu", "macos"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+      - name: Ubuntu - Install GTK4
+        if: matrix.os == 'ubuntu'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev
+      - name: MacOS - Install GTK4
+        if: matrix.os == 'macos'
+        run: brew install gtk4 gobject-introspection
+      - name: Install dependencies
+        run: |
+          shards install --without-development
+          bin/gi-crystal
+      - name: Build executable
+        run: shards build --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deepl-gui-${{ matrix.os }}
+          path: bin/deepl-gui
