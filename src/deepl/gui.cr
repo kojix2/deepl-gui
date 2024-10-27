@@ -30,7 +30,12 @@ app.activate_signal.connect do
 
   # Load the CSS into a provider
   css_provider = Gtk::CssProvider.new
-  css_provider.load_from_string(css)
+  gtk_version = Gtk::MAJOR_VERSION * 100 + Gtk::MINOR_VERSION
+  if gtk_version >= 412
+    css_provider.load_from_string(css)
+  else
+    css_provider.load_from_data(css, css.bytesize)
+  end
 
   # Set up the source language dropdown
   source_lang_names = source_languages.map(&.name).unshift("AUTO")
