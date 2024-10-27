@@ -21,16 +21,25 @@ app.activate_signal.connect do
   main_box.margin_start = 10
   main_box.margin_end = 10
 
+  # CSS styling to increase font size
+  css = <<-CSS
+  textview {
+    font-size: 20px; /* Change this size to your desired font size */
+  }
+  CSS
+
+  # Load the CSS into a provider
+  css_provider = Gtk::CssProvider.new
+  css_provider.load_from_data(css, css.size)
+
   # Set up the source language dropdown
   source_lang_names = source_languages.map(&.name).unshift("AUTO")
   lang_box_left = Gtk::DropDown.new_from_strings(source_lang_names)
-  # Set the default selection to "AUTO"
   lang_box_left.selected = 0
 
   # Set up the target language dropdown
   target_lang_names = target_languages.map(&.name).unshift("AUTO")
   lang_box_right = Gtk::DropDown.new_from_strings(target_lang_names)
-  # Set the default selection to "AUTO"
   lang_box_right.selected = 0
 
   # Create the Translate button
@@ -46,8 +55,15 @@ app.activate_signal.connect do
   text_left = Gtk::TextView.new
   text_left.wrap_mode = :word
   text_right = Gtk::TextView.new
-  text_right.editable = false # Disable editing for the translated text view
+  text_right.editable = false
   text_right.wrap_mode = :word
+
+  # Apply CSS to both textview widgets
+  style_context_left = text_left.style_context
+  style_context_left.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+
+  style_context_right = text_right.style_context
+  style_context_right.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
 
   scroll_left = Gtk::ScrolledWindow.new
   scroll_left.child = text_left
@@ -59,12 +75,11 @@ app.activate_signal.connect do
   scroll_right.hexpand = true
   scroll_right.vexpand = true
 
-  # Create a horizontal box for the text areas
+  # Continue with the rest of your layout as originally...
   text_box = Gtk::Box.new(:horizontal, 10)
   text_box.append(scroll_left)
   text_box.append(scroll_right)
 
-  # Add the language box and text areas to the main box
   main_box.append(lang_and_button_box)
   main_box.append(text_box)
 
@@ -97,10 +112,10 @@ app.activate_signal.connect do
     end
   end
 
-  # Set the main box as the child of the window and display it
   window.child = main_box
   window.present
 end
+
 
 # Run the application
 exit(app.run)
