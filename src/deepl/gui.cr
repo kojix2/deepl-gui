@@ -1,3 +1,4 @@
+require "../ext/crest"
 require "gtk4"
 require "deepl"
 
