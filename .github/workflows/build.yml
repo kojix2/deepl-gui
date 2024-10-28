@@ -6,11 +6,11 @@ on:
 jobs:
   build:
     name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu", "macos"]
+        os: ["ubuntu-24.04", "macos-latest"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,11 +19,11 @@ jobs:
         with:
           crystal: latest
       - name: Ubuntu - Install GTK4
-        if: matrix.os == 'ubuntu'
-        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev
+        if: matrix.os == 'ubuntu-24.04'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-4-dev gobject-introspection
       - name: MacOS - Install GTK4
-        if: matrix.os == 'macos'
-        run: brew install gtk4 gobject-introspection
+        if: matrix.os == 'macos-latest'
+        run: brew install gtk4 gobject-introspection glib pkg-config
       - name: Install dependencies
         run: |
           shards install --without-development
