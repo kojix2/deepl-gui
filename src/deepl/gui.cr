@@ -105,16 +105,16 @@ app.activate_signal.connect do
     source_text = text_left.buffer.text
     i = lang_box_left.selected
     source_lang = \
-       if i > 0 && i < source_languages.size
-         source_languages[lang_box_left.selected - 1].language
+       if i > 0 && i <= source_languages.size
+         source_languages[i - 1].language
        else
          nil
        end
 
     i = lang_box_right.selected
     target_lang = \
-       if i > 0 && i < target_languages.size
-         target_languages[lang_box_right.selected - 1].language
+       if i > 0 && i <= target_languages.size
+         target_languages[i - 1].language
        else
          translator.guess_target_language
        end
