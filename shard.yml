@@ -13,6 +13,8 @@ dependencies:
     github: hugopl/gtk4.cr
   deepl:
     github: kojix2/deepl.cr
+  easyclip:
+    github: kojix2/easyclip
 
 crystal: '>= 1.14.0'
 

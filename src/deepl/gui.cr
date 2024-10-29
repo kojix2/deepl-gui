@@ -1,6 +1,7 @@
 require "../ext/crest"
 require "gtk4"
 require "deepl"
+require "easyclip"
 
 translator = DeepL::Translator.new
 
@@ -72,6 +73,9 @@ app.activate_signal.connect do
   lang_box_right.halign = :start
   lang_box_right.set_size_request(150, -1)
 
+  # Copy button
+  copy_button = Gtk::Button.new_with_label("Copy")
+
   text_right = Gtk::TextView.new
   text_right.editable = false
   text_right.wrap_mode = :word
@@ -85,6 +89,7 @@ app.activate_signal.connect do
 
   right_panel.append(lang_box_right)
   right_panel.append(scroll_right)
+  right_panel.append(copy_button)
 
   # Horizontal box for the two panels
   text_box = Gtk::Box.new(:horizontal, 10)
@@ -125,6 +130,11 @@ app.activate_signal.connect do
     rescue ex
       text_right.buffer.text = "Error: #{ex.message}"
     end
+  end
+
+  copy_button.clicked_signal.connect do
+    target_text = text_right.buffer.text
+    EasyClip.copy(target_text)
   end
 end
 

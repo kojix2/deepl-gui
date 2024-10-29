@@ -8,6 +8,10 @@ shards:
     git: https://github.com/kojix2/deepl.cr.git
     version: 0.0.8
 
+  easyclip:
+    git: https://github.com/kojix2/easyclip.git
+    version: 0.1.1
+
   gi-crystal:
     git: https://github.com/hugopl/gi-crystal.git
     version: 0.24.0
