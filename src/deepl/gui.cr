@@ -30,12 +30,7 @@ app.activate_signal.connect do
   CSS
 
   css_provider = Gtk::CssProvider.new
-  gtk_version = Gtk::MAJOR_VERSION * 100 + Gtk::MINOR_VERSION
-  if gtk_version >= 412
-    css_provider.load_from_string(css)
-  else
-    css_provider.load_from_data(css, css.bytesize)
-  end
+  css_provider.load_from_string(css)
 
   # Left panel with source language dropdown, text input, and button
   left_panel = Gtk::Box.new(:vertical, 10)
