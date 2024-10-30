@@ -3,132 +3,177 @@ require "gtk4"
 require "deepl"
 require "easyclip"
 
-TRANSLATOR = DeepL::Translator.new
+class APP
+  TRANSLATOR       = DeepL::Translator.new
+  SOURCE_LANGUAGES = TRANSLATOR.get_source_languages
+  TARGET_LANGUAGES = TRANSLATOR.get_target_languages
 
-# Retrieve source and target languages
-SOURCE_LANGUAGES = TRANSLATOR.get_source_languages
-TARGET_LANGUAGES = TRANSLATOR.get_target_languages
-default_target_lang_name = TRANSLATOR.guess_target_language || "EN"
-default_target_lang_index = (TARGET_LANGUAGES.index { |lang| lang.language == default_target_lang_name } || 0).to_u32
+  @app : Gtk::Application
+  @source_lang_dropdown : Gtk::DropDown?
+  @source_text_view : Gtk::TextView?
+  @target_lang_dropdown : Gtk::DropDown?
+  @target_text_view : Gtk::TextView?
 
-app = Gtk::Application.new("com.example.translator", Gio::ApplicationFlags::None)
+  def source_lang_dropdown : Gtk::DropDown
+    @source_lang_dropdown.not_nil!
+  end
 
-def perform_translation(source_lang_dropdown, target_lang_dropdown, source_text_view, target_text_view)
-  source_text = source_text_view.buffer.text
-  return if source_text.empty?
-  i = source_lang_dropdown.selected
-  source_lang = if i > 0 && i <= SOURCE_LANGUAGES.size
-                  SOURCE_LANGUAGES[i - 1].language
-                else
-                  nil
+  def source_text_view : Gtk::TextView
+    @source_text_view.not_nil!
+  end
+
+  def target_lang_dropdown : Gtk::DropDown
+    @target_lang_dropdown.not_nil!
+  end
+
+  def target_text_view : Gtk::TextView
+    @target_text_view.not_nil!
+  end
+
+  def self.run
+    new.run
+  end
+
+  def initialize
+    @app = Gtk::Application.new("com.example.translator", Gio::ApplicationFlags::None)
+    @app.activate_signal.connect { activate }
+  end
+
+  def run
+    @app.run
+  end
+
+  def default_target_lang_index
+    default_target_lang_name = TRANSLATOR.guess_target_language || "EN"
+    (TARGET_LANGUAGES.index { |lang| lang.language == default_target_lang_name } || 0).to_u32
+  end
+
+  def css
+    <<-CSS
+      textview {
+        font-size: 20px;
+      }
+    CSS
+  end
+
+  def activate
+    Gtk::ApplicationWindow.new(@app).tap { |window|
+      window.title = "DeepL Translator"
+      window.set_default_size(800, 400)
+
+      window.child = Gtk::Box.new(:vertical, 10).tap { |main_box|
+        main_box.margin_top = 10
+        main_box.margin_bottom = 10
+        main_box.margin_start = 10
+        main_box.margin_end = 10
+
+        main_box.append(
+          Gtk::Box.new(:horizontal, 10).tap do |text_box|
+            css_provider = Gtk::CssProvider.new
+            css_provider.load_from_string(css)
+
+            text_box.append Gtk::Box.new(:vertical, 10).tap { |left_box|
+              left_box.hexpand = true
+              left_box.vexpand = true
+
+              @source_lang_dropdown = Gtk::DropDown.new_from_strings(SOURCE_LANGUAGES.map(&.name).unshift("AUTO"))
+              left_box.append source_lang_dropdown.tap { |l|
+                l.selected = 0
+                l.hexpand = false
+                l.halign = :start
+                l.set_size_request(180, -1)
+              }
+
+              left_box.append Gtk::ScrolledWindow.new.tap { |s|
+                s.hexpand = true
+                s.vexpand = true
+                @source_text_view = Gtk::TextView.new
+                s.child = source_text_view.tap { |t|
+                  t.wrap_mode = :word
+                  t.style_context
+                    .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                }
+              }
+
+              left_box.append Gtk::Button.new_with_label("Translate").tap { |translate_button|
+                translate_button.clicked_signal.connect { perform_translation }
+              }
+            }
+
+            text_box.append Gtk::Box.new(:vertical, 10).tap { |rp|
+              rp.hexpand = true
+              rp.vexpand = true
+
+              @target_lang_dropdown = Gtk::DropDown.new_from_strings(TARGET_LANGUAGES.map(&.name))
+              rp.append target_lang_dropdown.tap { |l|
+                l.selected = default_target_lang_index
+                l.hexpand = false
+                l.halign = :start
+                l.set_size_request(180, -1)
+              }
+
+              rp.append Gtk::ScrolledWindow.new.tap { |s|
+                s.hexpand = true
+                s.vexpand = true
+                @target_text_view = Gtk::TextView.new
+                s.child = target_text_view.tap { |t|
+                  t.wrap_mode = :word
+                  t.editable = false
+                  t.style_context
+                    .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                }
+              }
+
+              rp.append Gtk::Button.new_with_label("Copy").tap { |copy_button|
+                copy_button.clicked_signal.connect do
+                  target_text = target_text_view.buffer.text
+                  EasyClip.copy(target_text)
                 end
+              }
+            }
+          end
+        )
+      }
 
-  target_lang = TARGET_LANGUAGES[target_lang_dropdown.selected].language
+      window.present
+    }
+  end
 
-  begin
-    translated_text = TRANSLATOR.translate_text(
-      source_text,
-      source_lang: source_lang,
-      target_lang: target_lang
-    )
-    target_text_view.buffer.text = translated_text[0].text
-  rescue ex
-    target_text_view.buffer.text = "Error: #{ex.message}"
+  def source_text : String
+    source_text_view.buffer.text
+  end
+
+  def source_language_selected : String?
+    idx = source_lang_dropdown.selected
+    if idx > 0 && idx <= SOURCE_LANGUAGES.size
+      SOURCE_LANGUAGES[idx - 1].language
+    else
+      nil
+    end
+  end
+
+  def target_language_selected : String
+    idx = target_lang_dropdown.selected
+    TARGET_LANGUAGES[idx].language
+  end
+
+  def perform_translation
+    return if source_text.empty?
+
+    source_lang = source_language_selected
+    target_lang = target_language_selected
+
+    begin
+      translated_text = TRANSLATOR.translate_text(
+        source_text,
+        source_lang: source_lang,
+        target_lang: target_lang
+      )
+      target_text_view.buffer.text = translated_text[0].text
+    rescue ex
+      target_text_view.buffer.text = "Error: #{ex.message}"
+    end
   end
 end
 
-app.activate_signal.connect do
-  Gtk::ApplicationWindow.new(app).tap { |window|
-    window.title = "DeepL Translator"
-    window.set_default_size(800, 400)
-
-    window.child = Gtk::Box.new(:vertical, 10).tap { |main_box|
-      main_box.margin_top = 10
-      main_box.margin_bottom = 10
-      main_box.margin_start = 10
-      main_box.margin_end = 10
-
-      main_box.append(
-        Gtk::Box.new(:horizontal, 10).tap do |text_box|
-          css = <<-CSS
-          textview {
-            font-size: 20px;
-          }
-        CSS
-          css_provider = Gtk::CssProvider.new
-          css_provider.load_from_string(css)
-
-          translate_button = Gtk::Button.new_with_label("Translate")
-          source_lang_dropdown = Gtk::DropDown.new_from_strings(SOURCE_LANGUAGES.map(&.name).unshift("AUTO"))
-          source_text_view = Gtk::TextView.new
-
-          text_box.append Gtk::Box.new(:vertical, 10).tap { |left_box|
-            left_box.hexpand = true
-            left_box.vexpand = true
-
-            left_box.append source_lang_dropdown.tap { |l|
-              l.selected = 0
-              l.hexpand = false
-              l.halign = :start
-              l.set_size_request(180, -1)
-            }
-
-            left_box.append Gtk::ScrolledWindow.new.tap { |s|
-              s.hexpand = true
-              s.vexpand = true
-              s.child = source_text_view.tap { |t|
-                t.wrap_mode = :word
-                t.style_context
-                  .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
-              }
-            }
-
-            left_box.append(translate_button)
-          }
-
-          target_lang_dropdown = Gtk::DropDown.new_from_strings(TARGET_LANGUAGES.map(&.name))
-          target_text_view = Gtk::TextView.new
-
-          text_box.append Gtk::Box.new(:vertical, 10).tap { |rp|
-            rp.hexpand = true
-            rp.vexpand = true
-
-            rp.append target_lang_dropdown.tap { |l|
-              l.selected = default_target_lang_index
-              l.hexpand = false
-              l.halign = :start
-              l.set_size_request(180, -1)
-            }
-
-            rp.append Gtk::ScrolledWindow.new.tap { |s|
-              s.hexpand = true
-              s.vexpand = true
-              s.child = target_text_view.tap { |t|
-                t.wrap_mode = :word
-                t.editable = false
-                t.style_context
-                  .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
-              }
-            }
-
-            rp.append Gtk::Button.new_with_label("Copy").tap { |copy_button|
-              copy_button.clicked_signal.connect do
-                target_text = target_text_view.buffer.text
-                EasyClip.copy(target_text)
-              end
-            }
-          }
-
-          translate_button.clicked_signal.connect do
-            perform_translation(source_lang_dropdown, target_lang_dropdown, source_text_view, target_text_view)
-          end
-        end
-      )
-    }
-
-    window.present
-  }
-end
-
-# Run the application
-exit(app.run)
+APP.run
