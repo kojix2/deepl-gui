@@ -77,16 +77,15 @@ app.activate_signal.connect do
                 end
               )
 
-              source_text_view.wrap_mode = :word
-
-              style_context_left = source_text_view.style_context
-              style_context_left.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
-
               lp.append(
-                scroll_left = Gtk::ScrolledWindow.new.tap do |s|
-                  s.child = source_text_view
+                Gtk::ScrolledWindow.new.tap do |s|
                   s.hexpand = true
                   s.vexpand = true
+                  s.child = source_text_view.tap do |t|
+                    t.wrap_mode = :word
+                    t.style_context
+                      .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                  end
                 end
               )
 
@@ -113,19 +112,16 @@ app.activate_signal.connect do
                 end
               )
 
-              target_text_view.tap do |t|
-                t.wrap_mode = :word
-                t.editable = false
-              end
-
-              style_context_right = target_text_view.style_context
-              style_context_right.add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
-
               rp.append(
-                scroll_right = Gtk::ScrolledWindow.new.tap do |s|
-                  s.child = target_text_view
+                Gtk::ScrolledWindow.new.tap do |s|
                   s.hexpand = true
                   s.vexpand = true
+                  s.child = target_text_view.tap do |t|
+                    t.wrap_mode = :word
+                    t.editable = false
+                    t.style_context
+                      .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                  end
                 end
               )
 
