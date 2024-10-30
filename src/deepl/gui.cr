@@ -6,24 +6,24 @@ require "easyclip"
 TRANSLATOR = DeepL::Translator.new
 
 # Retrieve source and target languages
-source_languages = TRANSLATOR.get_source_languages
-target_languages = TRANSLATOR.get_target_languages
+SOURCE_LANGUAGES = TRANSLATOR.get_source_languages
+TARGET_LANGUAGES = TRANSLATOR.get_target_languages
 default_target_lang_name = TRANSLATOR.guess_target_language || "EN"
-default_target_lang_index = (target_languages.index { |lang| lang.language == default_target_lang_name } || 0).to_u32
+default_target_lang_index = (TARGET_LANGUAGES.index { |lang| lang.language == default_target_lang_name } || 0).to_u32
 
 app = Gtk::Application.new("com.example.translator", Gio::ApplicationFlags::None)
 
-def perform_translation(source_languages, target_languages, source_lang_dropdown, target_lang_dropdown, source_text_view, text_right)
+def perform_translation(source_lang_dropdown, target_lang_dropdown, source_text_view, text_right)
   source_text = source_text_view.buffer.text
   return if source_text.empty?
   i = source_lang_dropdown.selected
-  source_lang = if i > 0 && i <= source_languages.size
-                  source_languages[i - 1].language
+  source_lang = if i > 0 && i <= SOURCE_LANGUAGES.size
+                  SOURCE_LANGUAGES[i - 1].language
                 else
                   nil
                 end
 
-  target_lang = target_languages[target_lang_dropdown.selected].language
+  target_lang = TARGET_LANGUAGES[target_lang_dropdown.selected].language
 
   begin
     translated_text = TRANSLATOR.translate_text(
@@ -63,7 +63,7 @@ app.activate_signal.connect do
 
   translate_button = Gtk::Button.new_with_label("Translate")
   source_lang_dropdown = Gtk::DropDown.new_from_strings(
-    source_languages.map(&.name).unshift("AUTO")
+    SOURCE_LANGUAGES.map(&.name).unshift("AUTO")
   )
   source_text_view = Gtk::TextView.new
 
@@ -95,7 +95,7 @@ app.activate_signal.connect do
   end
 
   target_lang_dropdown = Gtk::DropDown.new_from_strings(
-    target_languages.map(&.name)
+    TARGET_LANGUAGES.map(&.name)
   )
   copy_button = Gtk::Button.new_with_label("Copy")
   target_text_view = Gtk::TextView.new
@@ -140,7 +140,7 @@ app.activate_signal.connect do
   window.present
 
   translate_button.clicked_signal.connect do
-    perform_translation(source_languages, target_languages, source_lang_dropdown, target_lang_dropdown, source_text_view, target_text_view)
+    perform_translation(source_lang_dropdown, target_lang_dropdown, source_text_view, target_text_view)
   end
 
   copy_button.clicked_signal.connect do
