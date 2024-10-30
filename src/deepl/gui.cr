@@ -13,6 +13,30 @@ default_target_lang_index = (target_languages.index { |lang| lang.language == de
 
 app = Gtk::Application.new("com.example.translator", Gio::ApplicationFlags::None)
 
+def perform_translation(translator, source_languages, target_languages, lang_box_left, lang_box_right, text_left, text_right)
+  source_text = text_left.buffer.text
+  return if source_text.empty?
+  i = lang_box_left.selected
+  source_lang = if i > 0 && i <= source_languages.size
+                  source_languages[i - 1].language
+                else
+                  nil
+                end
+
+  target_lang = target_languages[lang_box_right.selected].language
+
+  begin
+    translated_text = translator.translate_text(
+      source_text,
+      source_lang: source_lang,
+      target_lang: target_lang
+    )
+    text_right.buffer.text = translated_text[0].text
+  rescue ex
+    text_right.buffer.text = "Error: #{ex.message}"
+  end
+end
+
 app.activate_signal.connect do
   window = Gtk::ApplicationWindow.new(app)
   window.title = "DeepL Translator"
@@ -102,31 +126,8 @@ app.activate_signal.connect do
   window.child = main_box
   window.present
 
-  # Connect the Translate button click event
   translate_button.clicked_signal.connect do
-    source_text = text_left.buffer.text
-    i = lang_box_left.selected
-    source_lang = \
-       if i > 0 && i <= source_languages.size
-         source_languages[i - 1].language
-       else
-         nil
-       end
-
-    i = lang_box_right.selected
-    target_lang = target_languages[i].language
-
-    # Perform translation using the DeepL API
-    begin
-      translated_text = translator.translate_text(
-        source_text,
-        source_lang: source_lang,
-        target_lang: target_lang
-      )
-      text_right.buffer.text = translated_text[0].text
-    rescue ex
-      text_right.buffer.text = "Error: #{ex.message}"
-    end
+    perform_translation(translator, source_languages, target_languages, lang_box_left, lang_box_right, text_left, text_right)
   end
 
   copy_button.clicked_signal.connect do
