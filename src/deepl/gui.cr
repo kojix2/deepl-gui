@@ -45,7 +45,7 @@ app.activate_signal.connect do
   lang_box_left.selected = 0
   lang_box_left.hexpand = false
   lang_box_left.halign = :start
-  lang_box_left.set_size_request(150, -1)
+  lang_box_left.set_size_request(180, -1)
 
   text_left = Gtk::TextView.new
   text_left.wrap_mode = :word
@@ -73,7 +73,7 @@ app.activate_signal.connect do
   lang_box_right.selected = default_target_lang_index
   lang_box_right.hexpand = false
   lang_box_right.halign = :start
-  lang_box_right.set_size_request(150, -1)
+  lang_box_right.set_size_request(180, -1)
 
   # Copy button
   copy_button = Gtk::Button.new_with_label("Copy")
