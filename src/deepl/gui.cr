@@ -8,6 +8,8 @@ translator = DeepL::Translator.new
 # Retrieve source and target languages
 source_languages = translator.get_source_languages
 target_languages = translator.get_target_languages
+default_target_lang_name = translator.guess_target_language || "EN"
+default_target_lang_index = (target_languages.index { |lang| lang.language == default_target_lang_name } || 0).to_u32
 
 app = Gtk::Application.new("com.example.translator", Gio::ApplicationFlags::None)
 
@@ -66,9 +68,9 @@ app.activate_signal.connect do
 
   # Configure the target language dropdown
   lang_box_right = Gtk::DropDown.new_from_strings(
-    target_languages.map(&.name).unshift("AUTO")
+    target_languages.map(&.name)
   )
-  lang_box_right.selected = 0
+  lang_box_right.selected = default_target_lang_index
   lang_box_right.hexpand = false
   lang_box_right.halign = :start
   lang_box_right.set_size_request(150, -1)
@@ -112,12 +114,7 @@ app.activate_signal.connect do
        end
 
     i = lang_box_right.selected
-    target_lang = \
-       if i > 0 && i <= target_languages.size
-         target_languages[i - 1].language
-       else
-         translator.guess_target_language
-       end
+    target_lang = target_languages[i].language
 
     # Perform translation using the DeepL API
     begin
