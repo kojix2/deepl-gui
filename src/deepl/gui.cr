@@ -104,12 +104,21 @@ class APP
               rp.hexpand = true
               rp.vexpand = true
 
-              @target_lang_dropdown = Gtk::DropDown.new_from_strings(TARGET_LANGUAGES.map(&.name))
-              rp.append target_lang_dropdown.tap { |l|
-                l.selected = default_target_lang_index
-                l.hexpand = false
-                l.halign = :start
-                l.set_size_request(180, -1)
+              rp.append Gtk::Box.new(:horizontal, 0).tap { |tlb|
+                tlb.hexpand = true
+
+                @target_lang_dropdown = Gtk::DropDown.new_from_strings(TARGET_LANGUAGES.map(&.name))
+                tlb.append target_lang_dropdown.tap { |l|
+                  l.selected = default_target_lang_index
+                  l.hexpand = false
+                  l.halign = :start
+                  l.set_size_request(180, -1)
+                }
+
+                home_target_lang_button = Gtk::Button.new_with_label("🏠").tap { |b|
+                  b.clicked_signal.connect { target_lang_dropdown.selected = default_target_lang_index }
+                }
+                tlb.append home_target_lang_button
               }
 
               rp.append Gtk::ScrolledWindow.new.tap { |s|
