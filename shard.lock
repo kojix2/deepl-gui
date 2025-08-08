@@ -2,11 +2,11 @@ version: 2.0
 shards:
   crest:
     git: https://github.com/mamantoha/crest.git
-    version: 1.4.1
+    version: 1.5.1
 
   deepl:
     git: https://github.com/kojix2/deepl.cr.git
-    version: 0.0.8
+    version: 0.1.0
 
   easyclip:
     git: https://github.com/kojix2/easyclip.git
@@ -14,7 +14,7 @@ shards:
 
   gi-crystal:
     git: https://github.com/hugopl/gi-crystal.git
-    version: 0.24.0
+    version: 0.25.0
 
   gtk4:
     git: https://github.com/hugopl/gtk4.cr.git
@@ -22,7 +22,7 @@ shards:
 
   harfbuzz:
     git: https://github.com/hugopl/harfbuzz.cr.git
-    version: 0.2.0
+    version: 0.2.1
 
   http-client-digest_auth:
     git: https://github.com/mamantoha/http-client-digest_auth.git
@@ -30,7 +30,7 @@ shards:
 
   http_proxy:
     git: https://github.com/mamantoha/http_proxy.git
-    version: 0.12.0
+    version: 0.13.0
 
   pango:
     git: https://github.com/hugopl/pango.cr.git
