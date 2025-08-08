@@ -90,8 +90,11 @@ class APP
                 @source_text_view = Gtk::TextView.new
                 s.child = source_text_view.tap { |t|
                   t.wrap_mode = :word
-                  t.style_context
-                    .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                  Gtk::StyleContext.add_provider_for_display(
+                    t.display,
+                    css_provider,
+                    Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32
+                  )
                 }
               }
 
@@ -128,8 +131,11 @@ class APP
                 s.child = target_text_view.tap { |t|
                   t.wrap_mode = :word
                   t.editable = false
-                  t.style_context
-                    .add_provider(css_provider, Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32)
+                  Gtk::StyleContext.add_provider_for_display(
+                    t.display,
+                    css_provider,
+                    Gtk::STYLE_PROVIDER_PRIORITY_USER.to_u32
+                  )
                 }
               }
 
