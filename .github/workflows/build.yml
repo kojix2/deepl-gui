@@ -24,6 +24,10 @@ jobs:
       - name: MacOS - Install GTK4
         if: matrix.os == 'macos-latest'
         run: brew install gtk4 gobject-introspection glib pkg-config
+      - name: Setup macOS build environment
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           shards install --without-development
