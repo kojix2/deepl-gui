@@ -35,7 +35,7 @@ jobs:
           bin/gi-crystal
       - name: Build executable
         run: shards build --release
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: deepl-gui-${{ matrix.os }}
           path: bin/deepl-gui
